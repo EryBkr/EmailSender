@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+WORKDIR /src
+
+COPY ["EmailSender.Worker/EmailSender.Worker.csproj", "EmailSender.Worker/"]
+COPY ["EmailSender.Core/EmailSender.Core.csproj", "EmailSender.Core/"]
+COPY ["EmailSender.Shared/EmailSender.Shared.csproj", "EmailSender.Shared/"]
+COPY ["EmailSender.Infrastructure/EmailSender.Infrastructure.csproj", "EmailSender.Infrastructure/"]
+COPY ["EmailSender.Domain/EmailSender.Domain.csproj", "EmailSender.Domain/"]
+
+RUN dotnet restore "EmailSender.Worker/EmailSender.Worker.csproj"
+COPY . .
+WORKDIR /src/EmailSender.Worker
+RUN dotnet build "EmailSender.Worker.csproj" --configuration Debug
+
+
+
+CMD ["dotnet", "watch", "run", "--no-launch-profile"]

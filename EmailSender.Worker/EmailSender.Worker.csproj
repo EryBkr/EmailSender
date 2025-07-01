@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-EmailSender.Worker-20547cec-e9c0-4d1b-844a-707014e15a73</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
+    <PackageReference Include="Polly" Version="8.6.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EmailSender.Infrastructure\EmailSender.Infrastructure.csproj" />
+    <ProjectReference Include="..\EmailSender.Domain\EmailSender.Domain.csproj" />
+    <ProjectReference Include="..\EmailSender.Core\EmailSender.Core.csproj" />
+    <ProjectReference Include="..\EmailSender.Shared\EmailSender.Shared.csproj" />
+  </ItemGroup>
+</Project>

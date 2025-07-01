@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  emailsender.webapi:
+    build:
+      context: .
+      dockerfile: EmailSender.API/Dockerfile.debug
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/src
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+    working_dir: /src/EmailSender.API
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
+      - ASPNETCORE_URLS=http://+:8080
+      - DOTNET_RUNNING_IN_CONTAINER=true
+    command: ["dotnet", "watch", "run", "--no-launch-profile", "--urls", "http://0.0.0.0:8080"]
+
+  emailsender.worker:
+    build:
+      context: .
+      dockerfile: EmailSender.Worker/Dockerfile.debug
+    volumes:
+      - ./:/src
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+    working_dir: /src/EmailSender.Worker
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
+      - DOTNET_RUNNING_IN_CONTAINER=true
+    command: ["dotnet", "watch", "run", "--no-launch-profile"]

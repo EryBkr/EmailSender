@@ -1,0 +1,95 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:8.0
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password123
+    networks:
+      - emailsender-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/
+    networks:
+      - emailsender-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - emailsender-network
+
+  emailsender.webapi:
+    image: ${DOCKER_REGISTRY-}emailsenderwebapi
+    build:
+      context: .
+      dockerfile: EmailSender.WebApi/Dockerfile
+    container_name: emailsender.webapi
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - rabbitmq
+      - mailhog
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+    networks:
+      - emailsender-network
+
+  emailsender.worker:
+    image: ${DOCKER_REGISTRY-}emailsenderworker
+    build:
+      context: .
+      dockerfile: EmailSender.Worker/Dockerfile
+    container_name: emailsender.worker
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - rabbitmq
+      - mailhog
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - emailsender-network
+
+volumes:
+  mongo_data:
+  rabbitmq_data:
+
+networks:
+  emailsender-network:
+    driver: bridge
